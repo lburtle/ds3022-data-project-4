@@ -6,19 +6,25 @@ import datetime
 import json
 import os
 
-BUCKET_NAME = 'BUCKET_NAME'
+BUCKET_NAME = 'nem2pzy-access'
 
 def generate_test_event():
-    # event_key is an epoch timestamp for now. It should be cast as a string but not in the long form with a decimal point.
+    # event_key is an epoch timestamp for now. Cast as string.
     event_key = str(int(time.time()))
-    # building_code is a random string of 1 uppercase letter and 2 digits
-    building_code = ''.join(random.choices(string.ascii_uppercase, k=1)) + ''.join(random.choices(string.digits, k=2))
+
+    # building_code is a random selection
+    buildings = ['A01', 'B02', 'C03', 'D04', 'E05', 'F06', 'G07', 'H08', 'I09', 'J10']
+    building_code = random.choice(buildings)
+
     # building_door_id is a random string of 2 digits
-    building_door_id = ''.join(random.choices(string.digits, k=2))
+    building_door_id = str(random.choice(range(10, 70)))
+
     # access_time is a current date time stamp
     access_time = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    # user_identity is a random string of 3 lowercase letters, 1 digit, and 1 lowercase letter
-    user_identity = ''.join(random.choices(string.ascii_lowercase, k=3)) + ''.join(random.choices(string.digits, k=1)) + ''.join(random.choices(string.ascii_lowercase, k=1))
+
+    # user_identity is in the UVA ID format
+    users = ["alpha1b", "beta2c", "gamma3d", "delta4e", "epsilon5f", "zeta6g", "eta7h", "theta8i", "iota9j"]
+    user_identity = random.choice(users)
 
     # write these as a json file and upload to the s3 bucket
     data = {
@@ -28,7 +34,6 @@ def generate_test_event():
         'access_time': access_time,
         'user_identity': user_identity
     }
-    print(data)
     try:
         with open('test-event.json', 'w') as f:
             json.dump(data, f)
@@ -36,15 +41,15 @@ def generate_test_event():
         print(f"Error writing to file: {e}")
         return None
 
-    # try:
-    #     s3 = boto3.client('s3')
-    #     s3.upload_file('test-event.json', BUCKET_NAME, f'test-event-{event_key}.json')
-    #     # then delete the file
-    #     os.remove('test-event.json')
-    # except Exception as e:
-    #     print(f"Error uploading to S3: {e}")
-    #     return None
-    # return data
+    try:
+        s3 = boto3.client('s3')
+        s3.upload_file('test-event.json', BUCKET_NAME, f'test-event-{event_key}.json')
+        # then delete the file
+        os.remove('test-event.json')
+    except Exception as e:
+        print(f"Error uploading to S3: {e}")
+        return None
+    return data
 
 if __name__ == '__main__':
     generate_test_event()
